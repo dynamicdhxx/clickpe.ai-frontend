@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { generateBadges, getBadgeColorClass } from "@/lib/badges";
-import type { ProductRow, ChatMessage } from "@/types/database";
+import type { ProductRow } from "@/types/database";
 import {
   Send,
   Bot,
@@ -100,8 +100,8 @@ export function ChatSheet({ product, isOpen, onClose }: ChatSheetProps) {
     ]);
 
     try {
-      // Build chat history for context
-      const history: ChatMessage[] = messages.map((m) => ({
+      // Build chat history for context (only role and content needed for AI)
+      const history = messages.map((m) => ({
         role: m.role,
         content: m.content,
       }));
