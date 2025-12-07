@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     const filtersResult = productFiltersSchema.safeParse(filtersInput);
     if (!filtersResult.success) {
       return NextResponse.json(
-        { error: "Invalid filter parameters", details: filtersResult.error.errors },
+        { error: "Invalid filter parameters", details: filtersResult.error.issues },
         { status: 400 }
       );
     }
