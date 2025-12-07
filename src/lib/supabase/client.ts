@@ -7,7 +7,7 @@ export function createClient() {
 
   // Return a mock client if Supabase is not configured
   if (!supabaseUrl || !supabaseKey) {
-    return {
+    const mockClient = {
       auth: {
         signInWithPassword: async () => ({ error: { message: "Supabase not configured. Use demo mode." } }),
         signUp: async () => ({ error: { message: "Supabase not configured. Use demo mode." } }),
@@ -18,9 +18,9 @@ export function createClient() {
       from: () => ({
         select: () => ({ data: null, error: { message: "Supabase not configured" } }),
       }),
-    } as ReturnType<typeof createBrowserClient<Database>>;
+    };
+    return mockClient as unknown as ReturnType<typeof createBrowserClient<Database>>;
   }
 
   return createBrowserClient<Database>(supabaseUrl, supabaseKey);
 }
-
