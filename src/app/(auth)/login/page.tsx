@@ -15,7 +15,6 @@ import {
   Lock,
   Loader2,
   AlertCircle,
-  Github,
   Chrome,
 } from "lucide-react";
 
@@ -81,11 +80,6 @@ function LoginForm() {
     }
   };
 
-  // Demo login for testing without Supabase
-  const handleDemoLogin = () => {
-    router.push("/dashboard");
-  };
-
   return (
     <div className="w-full max-w-md space-y-8">
       {/* Title */}
@@ -116,15 +110,6 @@ function LoginForm() {
           >
             <Chrome className="mr-2 h-4 w-4" />
             Continue with Google
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-11"
-            onClick={() => handleOAuthLogin("github")}
-            disabled={isLoading}
-          >
-            <Github className="mr-2 h-4 w-4" />
-            Continue with GitHub
           </Button>
         </div>
 
@@ -186,16 +171,6 @@ function LoginForm() {
           </Button>
         </form>
 
-        {/* Demo Login */}
-        <div className="pt-2">
-          <Button
-            variant="ghost"
-            className="w-full text-muted-foreground"
-            onClick={handleDemoLogin}
-          >
-            Continue without account (Demo)
-          </Button>
-        </div>
       </div>
 
       {/* Sign Up Link */}

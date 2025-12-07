@@ -17,7 +17,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
-  Github,
   Chrome,
 } from "lucide-react";
 
@@ -63,7 +62,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleOAuthLogin = async (provider: "github" | "google") => {
+  const handleOAuthLogin = async (provider: "google") => {
     setIsLoading(true);
     setAuthError(null);
 
@@ -83,11 +82,6 @@ export default function SignUpPage() {
       setAuthError("An unexpected error occurred");
       setIsLoading(false);
     }
-  };
-
-  // Demo signup for testing without Supabase
-  const handleDemoSignUp = () => {
-    router.push("/dashboard");
   };
 
   if (success) {
@@ -167,15 +161,6 @@ export default function SignUpPage() {
                 <Chrome className="mr-2 h-4 w-4" />
                 Continue with Google
               </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11"
-                onClick={() => handleOAuthLogin("github")}
-                disabled={isLoading}
-              >
-                <Github className="mr-2 h-4 w-4" />
-                Continue with GitHub
-              </Button>
             </div>
 
             <div className="relative">
@@ -248,17 +233,6 @@ export default function SignUpPage() {
               </Button>
             </form>
 
-            {/* Demo Login */}
-            <div className="pt-2">
-              <Button
-                variant="ghost"
-                className="w-full text-muted-foreground"
-                onClick={handleDemoSignUp}
-              >
-                Continue without account (Demo)
-              </Button>
-            </div>
-
             <p className="text-xs text-center text-muted-foreground">
               By creating an account, you agree to our{" "}
               <Link href="/terms" className="underline hover:text-primary">
@@ -283,4 +257,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
