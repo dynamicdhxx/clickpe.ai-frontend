@@ -790,3 +790,4 @@ CREATE POLICY "Users can insert own chat messages" ON ai_chat_messages
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 `;
 
+

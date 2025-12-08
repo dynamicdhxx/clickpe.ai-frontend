@@ -14,6 +14,9 @@ export function createClient() {
         signInWithOAuth: async () => ({ error: { message: "Supabase not configured. Use demo mode." } }),
         signOut: async () => ({}),
         getUser: async () => ({ data: { user: null } }),
+        getSession: async () => ({ data: { session: null } }),
+        resetPasswordForEmail: async () => ({ error: { message: "Supabase not configured. Cannot send reset email." } }),
+        updateUser: async () => ({ error: { message: "Supabase not configured. Cannot update password." } }),
       },
       from: () => ({
         select: () => ({ data: null, error: { message: "Supabase not configured" } }),

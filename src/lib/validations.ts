@@ -122,3 +122,4 @@ export type AIAskResponse = z.infer<typeof aiAskResponseSchema>;
 export type ProductFilters = z.infer<typeof productFiltersSchema>;
 export type UserProfileUpdate = z.infer<typeof userProfileUpdateSchema>;
 
+

@@ -225,3 +225,4 @@ export function getBadgeColorClass(variant: ProductBadge["variant"]): string {
   }
 }
 
+

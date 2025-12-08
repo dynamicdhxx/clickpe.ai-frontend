@@ -291,3 +291,4 @@ ON CONFLICT (id) DO UPDATE SET
   terms = EXCLUDED.terms,
   updated_at = NOW();
 
+
