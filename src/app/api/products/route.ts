@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     const filters = filtersResult.data;
 
     let products: ProductRow[] = [];
+    let usingSeedData = false;
     
     // Check if Supabase is configured
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -109,14 +110,16 @@ export async function GET(request: NextRequest) {
       } catch (dbError) {
         console.warn("Database error, using seed data:", dbError);
         products = getSeedProducts();
+        usingSeedData = true;
       }
     } else {
       // Use seed data directly
       products = getSeedProducts();
+      usingSeedData = true;
     }
 
     // Apply filters to seed data (if using seed data)
-    if (!supabaseUrl || !supabaseKey || products === getSeedProducts()) {
+    if (usingSeedData) {
       if (filters.bank) {
         products = products.filter((p) =>
           p.bank.toLowerCase().includes(filters.bank!.toLowerCase())

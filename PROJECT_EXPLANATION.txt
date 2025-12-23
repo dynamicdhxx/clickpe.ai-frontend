@@ -1,0 +1,456 @@
+# Complete Project Walkthrough - LoanPicks
+
+## 📁 Root Configuration Files
+
+### `package.json`
+Purpose: Defines project dependencies and scripts.
+- Key dependencies:
+  - next@16 - React framework with App Router
+  - @supabase/ssr - Supabase server-side rendering
+  - @google/generative-ai - Google Gemini AI SDK
+  - zod - Schema validation
+  - @radix-ui/* - Headless UI components
+  - tailwind-merge, clsx - Utility class helpers
+  - sonner - Toast notifications
+
+---
+
+### `tsconfig.json`
+Purpose: TypeScript configuration with strict mode and path aliases (@/ → ./src/).
+
+---
+
+### `next.config.ts`
+Purpose: Next.js configuration (currently empty/default).
+
+---
+
+### `components.json`
+Purpose: shadcn/ui configuration - tells the CLI where to put components and what style to use.
+
+---
+
+### `middleware.ts`
+Purpose: Next.js middleware that runs on every request.
+- Calls updateSession to refresh Supabase auth tokens
+- Excludes static files from middleware processing
+
+---
+
+## 📁 `src/app/` - Pages & Routes
+
+### `src/app/layout.tsx` - Root Layout
+Purpose: Root HTML structure for all pages.
+- Sets dark theme by default
+- Includes toast notification component
+- Imports global CSS
+
+---
+
+### `src/app/globals.css` - Global Styles
+Purpose: Complete design system in CSS.
+- Color theme: Dark mode with teal accent (oklch color space)
+- Custom effects: Gradient mesh backgrounds, glassmorphism, animated borders
+- Animations: Fade-in-up with staggered delays
+
+---
+
+### `src/app/page.tsx` - Landing Page
+Purpose: Marketing landing page.
+- Hero with gradient text
+- 3 feature cards with icons
+- 4 stat counters
+- 3-step process explanation
+- CTA section
+
+---
+
+## 📁 `src/app/(auth)/` - Authentication Pages
+
+### `login/page.tsx`
+Purpose: Login page with two auth methods.
+- Email/Password: Uses supabase.auth.signInWithPassword
+- Google OAuth: Uses supabase.auth.signInWithOAuth
+- Redirects to /dashboard on success
+
+---
+
+### `signup/page.tsx`
+Purpose: User registration.
+- Stores display_name in user metadata
+- Shows confirmation message after signup
+- Supports Google OAuth signup too
+
+---
+
+### `forgot-password/page.tsx`
+Purpose: Password reset request.
+- Sends reset email via Supabase
+- Shows success message with email address
+
+---
+
+### `reset-password/page.tsx`
+Purpose: Set new password after clicking reset link.
+- Validates session from email link
+- Requires password confirmation
+- Redirects to dashboard on success
+
+---
+
+## 📁 `src/app/(dashboard)/` - Protected Pages
+
+### `layout.tsx` - Dashboard Layout
+Purpose: Wraps all dashboard pages.
+- Fetches current user server-side
+- Passes user to Header component
+- Applies gradient background
+
+---
+
+### `dashboard/page.tsx` - Top 5 Recommendations
+Purpose: Personalized loan recommendations.
+- Fetches all products from API
+- Calculates match score for each
+- Sorts by score, shows top 5
+- Featured "Best Match" card with explanation
+
+---
+
+### `products/page.tsx` - All Products Browser
+Purpose: Browse all products with filters.
+- Grid/List view toggle
+- Real-time filtering
+- Debounced API calls
+
+---
+
+### `profile/page.tsx` - User Settings
+Purpose: User profile management.
+- Edit display name, income, credit score
+- These values affect match scoring
+- Sign out functionality
+
+---
+
+## 📁 `src/app/api/` - API Routes
+
+### `products/route.ts` - List Products
+Purpose: Fetch products with optional filters.
+- Supports: bank search, loan type, APR range, income/credit score
+- Falls back to seed data if Supabase isn't configured
+- Returns unique bank names for filter dropdown
+
+---
+
+### `products/[id]/route.ts` - Get Single Product
+Purpose: Fetch a single product by UUID.
+
+---
+
+### `ai/ask/route.ts` - AI Chat Endpoint
+Purpose: Product Q&A via AI.
+- Fetches product for context
+- Passes to Gemini AI with grounding
+- Falls back to rule-based responses if AI unavailable
+
+---
+
+### `auth/callback/route.ts` - OAuth Callback
+Purpose: Handles OAuth redirect from Google.
+- Exchanges code for session
+- Redirects to intended destination
+
+---
+
+### `auth/signout/route.ts` - Sign Out
+Purpose: Signs user out and redirects to login.
+
+---
+
+## 📁 `src/components/` - React Components
+
+### `header.tsx` - Navigation Header
+Purpose: Responsive navigation header.
+- Sticky positioning with backdrop blur
+- Active route highlighting
+- User avatar with dropdown menu
+- Mobile hamburger menu
+
+---
+
+### `product-card.tsx` - Loan Product Card
+Purpose: Display loan product information.
+- Two variants: default (full) and compact (grid)
+- Best Match ribbon and gradient
+- Match score badge
+- Dynamic badges with icons
+- "Ask About Product" opens AI chat
+
+---
+
+### `chat-sheet.tsx` - AI Chat Drawer
+Purpose: AI chat interface for product Q&A.
+- Slide-out sheet from right
+- Shows product header with badges
+- Suggested questions for quick start
+- Chat history with loading states
+- Sends to /api/ai/ask with history
+
+---
+
+### `product-filters.tsx` - Filter Controls
+Purpose: Advanced product filtering.
+- Bank search with autocomplete
+- Loan type dropdown
+- Advanced toggle with sliders:
+  - APR range (0-25%)
+  - Max required income (0-100K)
+  - Max credit score requirement (300-850)
+- Active filter badges with remove buttons
+- 300ms debounced updates
+
+---
+
+## 📁 `src/lib/` - Utilities & Business Logic
+
+### `utils.ts` - Tailwind Helper
+Purpose: Merge Tailwind classes intelligently (handles conflicts).
+
+---
+
+### `badges.ts` - Badge Generation & Match Scoring
+
+Badge Generation:
+- APR-based: Low APR (≤8%), Competitive Rate (≤12%)
+- Prepayment: No Prepayment Penalty
+- Speed: Instant Disbursal, Fast Disbursal
+- Documentation: Minimal Docs
+- Income: Shows eligibility threshold
+- Credit Score: Low Credit Score OK (≤650)
+- Tenure: Flexible Tenure (4+ year range)
+- Processing Fee: Zero Processing Fee
+- Loan Type: Education, Home, Vehicle badges
+
+Match Score Calculation:
+- Base: 50 points
+- APR ≤8%: +20, ≤12%: +15, ≤15%: +10, ≤18%: +5
+- Income eligible: +15, comfortable (1.5x): +5
+- Credit score eligible: +15, comfortable (+50): +5
+- Prepayment allowed: +5
+- Instant disbursal: +8, Fast: +5
+- Minimal docs: +5
+- Zero processing fee: +5
+- Flexible tenure: +3
+- Maximum: 100 (capped)
+
+---
+
+### `ai.ts` - Gemini AI Integration
+Purpose: AI-powered product Q&A.
+- Gemini integration: Grounded prompts with product data
+- Fallback system: Keyword matching if AI unavailable
+- Grounding strategy: AI can only use provided product fields
+
+System Prompt Includes:
+- Product name, bank, type
+- APR, income requirements, credit score requirements
+- Tenure range, processing fee, prepayment terms
+- Disbursal speed, documentation level
+- Eligibility criteria, required documents
+- FAQs from database
+
+Fallback Keywords:
+- "eligibility", "requirement", "qualify" → Shows eligibility info
+- "document", "doc" → Shows required documents
+- "prepay", "early" → Shows prepayment terms
+- "interest", "rate", "apr" → Shows APR
+- "tenure", "duration" → Shows tenure range
+- "fee", "processing" → Shows fees
+- "disbursal", "fast" → Shows speed
+
+---
+
+### `validations.ts` - Zod Schemas
+Purpose: Runtime type validation for API requests.
+- Product schema with all loan fields
+- AI ask request validation
+- Filter parameter validation
+- Type exports for TypeScript
+
+---
+
+### `seed-data.ts` - Fallback Product Data
+Purpose: 15 diverse loan products for demo/fallback.
+
+Products included:
+1. HDFC Personal Loan Express (10.5% APR, fast, minimal docs)
+2. SBI Education Loan (7.5% APR, zero income requirement)
+3. ICICI Home Loan (8.4% APR, women get 0.05% concession)
+4. Axis Bank Car Loan (9.25% APR, up to 100% funding)
+5. Bajaj Finserv Instant Loan (12% APR, instant disbursal)
+6. Kotak Mahindra Home Loan (8.65% APR, up to ₹5 crores)
+7. Tata Capital Personal Loan (11.25% APR, flexible EMI dates)
+8. Punjab National Bank Vehicle Loan (8.85% APR, EV discount)
+9. IDFC First Bank Credit Line (14.5% APR, zero processing fee)
+10. Bank of Baroda Education Loan (7.75% APR, interest subsidy)
+11. Yes Bank Debt Consolidation (13.5% APR, consolidate multiple loans)
+12. IndusInd Bank Premium Personal Loan (10% APR, high income)
+13. Federal Bank Two-Wheeler Loan (9.99% APR, student scheme)
+14. Canara Bank Home Loan (8.35% APR, PMAY benefit)
+15. MoneyTap Credit Line (15% APR, app-based, instant)
+
+---
+
+### `supabase/client.ts` - Browser Client
+Purpose: Supabase client for browser/client components.
+- Returns mock client if Supabase isn't configured
+- Allows app to run in demo mode
+
+---
+
+### `supabase/server.ts` - Server Client
+Purpose: Supabase client for server components/API routes.
+- Handles cookies for session management
+- Mock client for demo mode
+
+---
+
+### `supabase/middleware.ts` - Auth Middleware
+Purpose: Protect routes and manage sessions.
+- Refreshes auth tokens on each request
+- Redirects unauthenticated users to login
+- Redirects authenticated users away from login pages
+- Demo mode allows all routes if Supabase not configured
+
+Protected routes: /dashboard, /products, /profile
+Auth routes (redirects if logged in): /login, /signup
+
+---
+
+## 📁 `src/types/` - TypeScript Types
+
+### `database.ts` - Type Definitions
+Purpose: TypeScript interfaces matching database schema.
+
+Types defined:
+- LoanType: "personal" | "education" | "vehicle" | "home" | "credit_line" | "debt_consolidation"
+- DisbursalSpeed: "instant" | "fast" | "standard" | "slow"
+- DocsLevel: "minimal" | "standard" | "extensive"
+- ChatRole: "user" | "assistant"
+- FAQ: { question, answer }
+- Terms: { prepayment_penalty, late_payment_fee, processing_time, eligibility_criteria, required_documents }
+- ProductRow: Complete product with all fields
+- Product: ProductRow + badges + matchScore
+- ProductBadge: { label, variant, icon }
+- UserRow: { id, email, display_name, income, credit_score }
+- ChatMessage: { id, role, content, timestamp }
+
+---
+
+## 📁 `supabase/` - Database
+
+### `migrations/001_initial_schema.sql`
+Purpose: PostgreSQL schema for Supabase.
+
+Tables:
+1. products - All loan product data with JSONB for FAQ/terms
+2. users - Extends auth.users with income/credit_score
+3. ai_chat_messages - Chat history per user per product
+
+Features:
+- UUID primary keys
+- Check constraints for valid values
+- Indexes for filtering performance
+- Auto-update timestamps trigger
+- Row Level Security (RLS) enabled
+- Policies: Products public read, users own data only
+- Trigger to auto-create user profile on signup
+
+---
+
+### `seed.sql`
+Purpose: Insert 15 loan products into the database.
+- Same data as seed-data.ts but as SQL INSERTs
+- Uses ON CONFLICT DO UPDATE for idempotent seeding
+
+---
+
+## 📁 `src/components/ui/` - shadcn/ui Components
+
+Pre-built accessible UI components:
+- alert.tsx - Error/success messages
+- avatar.tsx - User profile pictures
+- badge.tsx - Product feature tags
+- button.tsx - Clickable buttons
+- card.tsx - Product cards
+- dialog.tsx - Modal dialogs
+- dropdown-menu.tsx - User menu
+- input.tsx - Form inputs
+- label.tsx - Form labels
+- scroll-area.tsx - Chat scroll container
+- select.tsx - Dropdowns
+- separator.tsx - Visual dividers
+- sheet.tsx - Slide-out drawer (for chat)
+- skeleton.tsx - Loading placeholders
+- slider.tsx - Range inputs (APR, income)
+- sonner.tsx - Toast notifications
+- tabs.tsx - Grid/List toggle
+- textarea.tsx - Chat input
+
+---
+
+## 🔄 Data Flow Summary
+
+1. User visits /dashboard
+2. Dashboard Layout (Server) fetches user from Supabase
+3. Dashboard Page (Client) calls fetch("/api/products")
+4. API Route queries Supabase OR returns seed data
+5. calculateMatchScore() runs for each product
+6. Products sorted by score, top 5 displayed
+7. ProductCard renders with generateBadges()
+8. User clicks "Ask About Product"
+9. ChatSheet opens with suggested questions
+10. User types question
+11. POST /api/ai/ask with productId, message, history
+12. generateAIResponse() calls Gemini OR fallback
+13. Response displayed in chat
+
+---
+
+## Best Match Logic - Simple Explanation
+
+The app calculates a match score (0-100%) for each loan product based on how well it fits the user. The product with the highest score becomes the "Best Match".
+
+### Point System:
+
+Everyone Starts at 50 Points
+
+Lower Interest = More Points (up to +20):
+- 8% or less: +20
+- 8-12%: +15
+- 12-15%: +10
+- 15-18%: +5
+- Above 18%: +0
+
+Can You Afford It? (up to +20):
+- You qualify: +15 points
+- You earn 1.5x the minimum: +5 bonus points
+
+Is Your Credit Score Good Enough? (up to +20):
+- You qualify: +15 points
+- You have 50+ points buffer: +5 bonus points
+
+Bonus Features (up to +26):
+- Prepayment allowed: +5
+- Instant disbursal: +8
+- Fast disbursal: +5
+- Minimal documentation: +5
+- Zero processing fee: +5
+- Flexible tenure (4+ year range): +3
+
+Maximum score: 100 (capped)
+
+In One Sentence:
+The best match is the loan with the lowest interest rate that you can actually qualify for, with the most user-friendly features.
+
